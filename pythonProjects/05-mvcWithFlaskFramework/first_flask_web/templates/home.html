@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title> Home </title>
+    <script
+    type="text/javascript"
+    src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+    <link rel="stylesheet" href="{{ url_for ('static', filename='css/style.css') }}" >
+    <script src="{{url_for('static', filename='js/myFirstChart.js')}}"  ></script>
+</head>
+<body>
+    <h1>Demo Chart</h1>
+    <form id="data_form">
+        <label for="data_input">Press Button To Show Chart</label>
+        <input class="input" type="text" id="data_input" name="data_input" placeholder="example input label">
+        <button class="button" type="submit">Submit</button>
+    </form>
+
+    <div id="result"></div>
+    <div class="b" id="firstContainer"> </div>
+    <div class="c" id="secondContainer"> ShowChartInstant</div>
+</body>
+</html>
+
+<script>
+   
+   document.getElementById("data_form").addEventListener("submit", function(event) {
+    event.preventDefault();  // Prevent default form submission
+            var formData = new FormData(this);  // Get form data
+            var xhr = new XMLHttpRequest();  // Create XMLHttpRequest object
+            var name = ""
+            xhr.open("POST", "/process_data");  // Specify the URL to send the request to
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    jsonData = JSON.parse(xhr.responseText);
+                    var data = []
+                    name = jsonData[jsonData.length-1]
+                    for (i = 0; i < jsonData.length-1; i++) {
+                        var dict = {} ;
+                        dict['value'] = jsonData[i][1];
+                        dict['time'] = jsonData[i][0];
+                        data[i] = dict;
+                    }
+                    document.getElementById("firstContainer").textContent = "";
+                    manager.addData(data);
+                }
+            };
+            xhr.send(formData);  // Send form data asynchronously
+});
+
+var jsonData = JSON.parse('{{ data | tojson | safe }}');
+data = [];
+manager.initializeChart(data);
+for (i = 0; i < jsonData.length; i++) {
+var dict = {} ;
+    dict['value'] = jsonData[i][1];
+    dict['time'] = jsonData[i][0];
+    data[i]=dict;
+}
+manager.rubber(data); 
+    
+</script>
